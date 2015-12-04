@@ -8,29 +8,27 @@
 # ==============================================================================
 import sys
 import os
+import urllib
 
 # *** There are NO entries to edit here ***
 
 # Check if using unix style system or windows:
+#   RhinoVerison = 1 for windows
+#   RhinoVersion = 2 for mac
 if os.name in ['posix','mac']:
 	RhinoVersion = 2
 elif os.name == 'nt':
 	RhinoVersion = 1
 
-# ONE:
-# The string below should contain the path to your installation of AirCONICS
-# Example: AirCONICSpath = "C:/Users/as/Documents/airconicsv021/"
-AirCONICSpath = os.getcwd() + '/'
+# This line should produce the string name of the Airconics path - this will
+# be added to the python path when this setup file is run
+AirCONICSpath = os.path.dirname(__file__)
 
-# TWO:
-# The string below should contain the path to your library of Selig-formatted
-# airfoils. If you are using the UIUC library included in this installation,
-# this should be the path to the coord_seligFmt folder included.
-
-# Example: SeligPath = "C:/Users/as/Documents/airconicsv021/coord_seligFmt/"
-SeligPath = AirCONICSpath + 'coord_seligFmt/'
-
-os.listdir(SeligPath)
+# The line below should produce the path to your library of Selig-formatted
+# airfoils. When this setup script is run, it will check if the directory
+# exists and then download from source:
+# NOTE: If you are having trouble here, the source url may be deprecated. 
+SeligPath = os.path.join(AirCONICSpath + 'coord_seligFmt')    
 
 
 
