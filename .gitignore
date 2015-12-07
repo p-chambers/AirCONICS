@@ -1,2 +1,3 @@
 *.DS_Store
-coord_seligFmt/
+/python-occ-plugin/src/airconics/coord_seligFmt/
+/python-occ-plugin/src/airconics.egg-info/
