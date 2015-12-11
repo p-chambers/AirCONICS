@@ -27,32 +27,30 @@ class Airfoil:
                  Naca4Profile=False,
                  Naca5Profile=False,
                  EnforceSharpTE=False):
-        """Class Constructor:
+        """Class Constructor: creates and returns an Airfoil instance
         Parameters
         ----------
         LeadingEdgePoint - array of float (,3)
             (x, y, z) origin of the airfoil LE
-            
         ChordLength - 
-        
+            #TODO
         Rotation - 
-        
+            #TODO
         Twist - 
-        
-        Type - 
-        
+            #TODO
         SeligProfile - string
-            Type of airfoil to create:
-                - 'Selig' (default) = curve from 'Seligprofile'
-                # TODO
-                - 'Naca4' = curve from NACA 4 digit profile
-                - 'Naca5' = curve from NACA 5 digit profile
-        
+            Name of the Selig airfoil curve points
+        NACA4Profile - string
+            Name of the airfoil in NACA 4 format   
+        NACA5Profile - string
+            Name of the airfoil in NACA 5 format
         EnforceSharpTE - bool
             #TODO
+        Notes
+        -----
+        Either SeligProfile, Naca4Profile or Naca5Profile should be given to
+        this function. Specifying more than one profile will give an error.
         
-        Returns
-        -------
         """
         Profiles = [SeligProfile, Naca4Profile, Naca5Profile]
 #        Input checks:
@@ -71,8 +69,7 @@ class Airfoil:
 
 
     def _make_airfoil(self, SeligProfile, Naca4Profile, Naca5Profile):
-        """Selects airfoil 'add' function based on Profile specified 
-        """
+        """Selects airfoil 'add' function based on Profile specified """
         if SeligProfile:
             return self._AddAirfoilFromSeligFile(SeligProfile)
         elif Naca4Profile:
@@ -89,7 +86,7 @@ class Airfoil:
         """ TODO
         """
         N = len(x)
-        section_pts_2d = [gp_Pnt2d(x[i], z[i]) for i in xrange(N)]
+        section_pts_2d = [gp_Pnt2d(z[i],x[i]) for i in xrange(N)]
         pt_array = point2d_list_to_TColgp_Array1OfPnt2d(section_pts_2d)
         plan = gp_Pln(gp_Pnt(0., 0., 0.), gp_Dir(0., 1., 0.))  # XZ plane
 
