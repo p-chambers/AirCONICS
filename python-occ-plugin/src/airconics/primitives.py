@@ -81,24 +81,37 @@ class Airfoil:
         else:
             raise TypeError("Unknown airfoil type: see help(Airfoil)")
 
-       
-    def _fitAirfoiltoPoints(self, x, z): 
-        """ TODO
-        """
-        N = len(x)
-        section_pts_2d = [gp_Pnt2d(z[i],x[i]) for i in xrange(N)]
-        pt_array = point2d_list_to_TColgp_Array1OfPnt2d(section_pts_2d)
-        plan = gp_Pln(gp_Pnt(0., 0., 0.), gp_Dir(0., 1., 0.))  # XZ plane
-
-        # use the array to create a spline describing the airfoil section
-        spline_2d = Geom2dAPI_PointsToBSpline(pt_array,
-                                              N-1,  # order min
-                                              N)   # order max
-        spline = geomapi.To3d(spline_2d.Curve(), plan)
-        return spline
+        # _fitAirfoitoPoints is deprecated: slows down computation.
+        # Migrated to 
+#    def _fitAirfoiltoPoints(self, x, z): 
+#        """ Fits an OCC curve to airfoil x, z points
+#        Parameters
+#        ----------
+#        x - array
+#            airfoil curve x points
+#        z - array
+#            airfoil curve z points
+#        Returns
+#        -------
+#        spline - 
+#        
+#        """
+#        N = len(x)
+#        # Note: not sure why the points need to be defined as (z, x) here rather 
+#        # than (x, z) as pythonocc example suggests it should be (x,z):
+#        section_pts_2d = [gp_Pnt2d(z[i],x[i]) for i in xrange(N)]
+#        pt_array = point2d_list_to_TColgp_Array1OfPnt2d(section_pts_2d)
+#        plan = gp_Pln(gp_Pnt(0., 0., 0.), gp_Dir(0., 1., 0.))  # XZ plane
+#
+#        # use the array to create a spline describing the airfoil section
+#        spline_2d = Geom2dAPI_PointsToBSpline(pt_array,
+#                                              N-1,  # order min
+#                                              N)   # order max
+#        spline = geomapi.To3d(spline_2d.Curve(), plan)
+#        return spline
 
               
-    def _AirfoilPointsSeligFormat(self, SeligProfile):
+    def _BsplineFromSeligAirfoil(self, SeligProfile):
         """Extracts airfoil coordinates from a file
         
         Assumes input selig files are specified in the Selig format, i.e., 
@@ -124,13 +137,22 @@ class Airfoil:
         data = resource_string(res_pkg, SeligProfile)
         data = data.split('\r\n')[1:-1]
         N = len(data)
-        x = np.zeros(N)
-        z = np.zeros(N)
+        section_pts_2d = []
         for i, line in enumerate(data):
-            vals = line.split()
-            x[i] = float(vals[0])
-            z[i] = float(vals[1])
-        return x, z
+            vals = line.split()    #vals[0] = x coord, vals[1] = y coord
+            section_pts_2d.append(gp_Pnt2d(float(vals[0]), float(vals[1])))
+            # Note: not sure why the points need to be defined as (z, x) here rather 
+            # than (x, z) as pythonocc example suggests it should be (x,z):            
+
+        pt_array = point2d_list_to_TColgp_Array1OfPnt2d(section_pts_2d)
+        plan = gp_Pln(gp_Pnt(0., 0., 0.), gp_Dir(0., 0., 1.))  # XZ plane
+
+        # use the array to create a spline describing the airfoil section
+        spline_2d = Geom2dAPI_PointsToBSpline(pt_array,
+                                              N-1,  # order min
+                                              N)   # order max
+#        spline = geomapi.To3d(spline_2d.Curve(), plan)
+        return spline_2d.Curve()            
 
                 
     def _AddAirfoilFromSeligFile(self, SeligProfile, Smoothing=1):
@@ -144,8 +166,8 @@ class Airfoil:
         
         """
         assert(SeligProfile != ''), "No Selig Profile given (string)"
-        x, z = self._AirfoilPointsSeligFormat(SeligProfile)
-        C = self._fitAirfoiltoPoints(x, z)
+        C = self._BsplineFromSeligAirfoil(SeligProfile)
+#        C = self._fitAirfoiltoPoints(x, z)  #Removed for speed!
         Chrd = 1    #TODO: chord transform, smoothing
 #            if 'Smoothing' in locals():
 #                self.SmoothingIterations = Smoothing
